@@ -16,24 +16,24 @@ export type Database = {
     Tables: {
       chats: {
         Row: {
-          attachment_url: string
+          attachment_path: string
           created_at: string
           id: string
-          profile_id: string
+          profile_id: string | null
           title: string
         }
         Insert: {
-          attachment_url: string
+          attachment_path: string
           created_at?: string
           id?: string
-          profile_id: string
+          profile_id?: string | null
           title: string
         }
         Update: {
-          attachment_url?: string
+          attachment_path?: string
           created_at?: string
           id?: string
-          profile_id?: string
+          profile_id?: string | null
           title?: string
         }
         Relationships: [
@@ -48,46 +48,61 @@ export type Database = {
       }
       documents: {
         Row: {
+          chat_id: string
           content: string | null
           embedding: string | null
           id: number
           metadata: Json | null
+          profile_id: string | null
         }
         Insert: {
+          chat_id: string
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          profile_id?: string | null
         }
         Update: {
+          chat_id?: string
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          profile_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "documents_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
-          email: string
+          first_name: string | null
           id: string
-          name: string
-          provider: string
-          providerId: string
+          last_name: string | null
         }
         Insert: {
-          email: string
+          first_name?: string | null
           id: string
-          name: string
-          provider: string
-          providerId: string
+          last_name?: string | null
         }
         Update: {
-          email?: string
+          first_name?: string | null
           id?: string
-          name?: string
-          provider?: string
-          providerId?: string
+          last_name?: string | null
         }
         Relationships: []
       }

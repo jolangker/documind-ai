@@ -22,13 +22,12 @@
     "@langchain/core": "^0.3.78",
     "@nuxt/ui": "^4.0.0",
     "@nuxtjs/mdc": "^0.17.4",
-    "@supabase/supabase-js": "^2.58.0",
+    "@nuxtjs/supabase": "^2.0.0",
     "ai": "^5.0.56",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.5",
     "langchain": "^0.3.35",
     "nuxt": "^4.1.2",
-    "nuxt-auth-utils": "^0.5.25",
     "openai": "^5.23.1",
     "pg": "^8.16.3",
     "shiki-stream": "^0.1.2",
@@ -39,7 +38,6 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.9.0",
     "@types/node": "^24.5.2",
-    "drizzle-kit": "^0.31.5",
     "eslint": "^9.36.0",
     "typescript": "^5.9.2",
     "vue-tsc": "^3.1.0"

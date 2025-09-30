@@ -2,8 +2,13 @@ import * as unpdf from 'unpdf'
 import { v4 as uuidv4 } from 'uuid'
 import { splitter } from '../utils/langchain'
 import type { DocumentChunk, DocumentEmbedding } from '~~/shared/types/document'
+import type { H3Event } from 'h3'
+import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server'
 
-export function useDocumentService() {
+export async function useDocumentService(event: H3Event) {
+  const supabase = await serverSupabaseClient(event)
+  const user = await serverSupabaseUser(event)
+
   const extractTextFromDocument = async (file: File) => {
     const buffer = await file.arrayBuffer()
     const pdf = await unpdf.getDocumentProxy(new Uint8Array(buffer))
@@ -21,17 +26,22 @@ export function useDocumentService() {
     }))
   }
 
-  const storeEmbeddings = async (embeddings: DocumentEmbedding[]) => {
-    const { error } = await supabase.from('documents').insert(embeddings)
+  const storeEmbeddings = async (chatId: string, embeddings: DocumentEmbedding[]) => {
+    const payload = embeddings.map(embedding => ({
+      ...embedding,
+      chat_id: chatId
+    })) as unknown as DocumentPayload[]
+
+    const { error } = await supabase.from('documents').insert(payload)
     if (error) {
-      createError(error)
+      throw createError(error)
     }
   }
 
-  const storeAttachment = async (userId: string, file: File) => {
+  const storeAttachment = async (file: File) => {
     const { data, error } = await supabase.storage
       .from('attachments')
-      .upload(`${userId}/${uuidv4()}.pdf`, file)
+      .upload(`${user?.sub}/${uuidv4()}.pdf`, file)
 
     if (!data || error) {
       throw createError(error)
@@ -40,16 +50,10 @@ export function useDocumentService() {
     return data
   }
 
-  const storeDocumentEmbeddings = async (userId: string, file: File, embeddings: DocumentEmbedding[]) => {
-    await storeEmbeddings(embeddings)
-    const attachment = await storeAttachment(userId, file)
-
-    return attachment
-  }
-
   return {
     extractTextFromDocument,
     chunkDocumentText,
-    storeDocumentEmbeddings
+    storeAttachment,
+    storeEmbeddings
   }
 }

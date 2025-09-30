@@ -1,4 +1,9 @@
-export function useChatService() {
+import { serverSupabaseClient } from '#supabase/server'
+import type { H3Event } from 'h3'
+
+export async function useChatService(event: H3Event) {
+  const supabase = await serverSupabaseClient(event)
+
   const storeChat = async (payload: ChatPayload) => {
     const { data, error } = await supabase.from('chats')
       .insert(payload)
@@ -12,10 +17,9 @@ export function useChatService() {
     return data
   }
 
-  const getChats = async (userId: string) => {
+  const getChats = async () => {
     const { data, error } = await supabase.from('chats')
       .select('*')
-      .eq('profile_id', userId)
 
     if (!data || error) {
       throw createError(error)

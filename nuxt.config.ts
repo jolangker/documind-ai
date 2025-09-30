@@ -4,11 +4,11 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/ui',
     '@nuxtjs/mdc',
-    'nuxt-auth-utils'
+    '@nuxtjs/supabase'
   ],
 
   devtools: {
-    enabled: true
+    enabled: false
   },
 
   css: ['~/assets/css/main.css'],
@@ -17,13 +17,6 @@ export default defineNuxtConfig({
     highlight: {
       // noApiRoute: true
       shikiEngine: 'javascript'
-    }
-  },
-
-  runtimeConfig: {
-    public: {
-      SUPBASE_URL: process.env.SUPABASE_URL,
-      SUPBASE_KEY: process.env.SUPABASE_KEY
     }
   },
 
@@ -57,6 +50,14 @@ export default defineNuxtConfig({
         commaDangle: 'never',
         braceStyle: '1tbs'
       }
+    }
+  },
+
+  supabase: {
+    types: '~~/shared/types/supabase.d.ts',
+    redirectOptions: {
+      login: '/',
+      callback: '/'
     }
   }
 })

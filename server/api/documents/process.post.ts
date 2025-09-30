@@ -1,15 +1,13 @@
-import type { User } from '#auth-utils'
 import { useChatService } from '~~/server/services/chatService'
 import { useDocumentService } from '~~/server/services/documentService'
 import { useLLMService } from '~~/server/services/llmService'
 
-const { extractTextFromDocument, chunkDocumentText, storeDocumentEmbeddings } = useDocumentService()
 const { createEmbeddings, summarizeText } = useLLMService()
-const { storeChat } = useChatService()
 
 export default defineEventHandler(async (event) => {
+  const { storeChat } = await useChatService(event)
+  const { extractTextFromDocument, chunkDocumentText, storeAttachment, storeEmbeddings } = await useDocumentService(event)
   const fd = await readFormData(event)
-  const { user } = await getUserSession(event) as { user: User }
 
   const file = fd.get('file') as File | undefined
   if (!file) {
@@ -20,17 +18,17 @@ export default defineEventHandler(async (event) => {
   const chunks = await chunkDocumentText(text, file.name)
 
   const embeddings = await createEmbeddings(chunks)
-  const { fullPath } = await storeDocumentEmbeddings(user!.id!, file, embeddings)
-
-  const { questions, summary } = await summarizeText(text)
+  const { fullPath } = await storeAttachment(file)
 
   const chatPayload: ChatPayload = {
-    attachment_url: fullPath,
-    title: file.name,
-    profile_id: user.id
+    attachment_path: fullPath,
+    title: file.name
   }
 
   const chat = await storeChat(chatPayload)
+  await storeEmbeddings(chat.id, embeddings)
+
+  const { questions, summary } = await summarizeText(text)
 
   return {
     totalPages,

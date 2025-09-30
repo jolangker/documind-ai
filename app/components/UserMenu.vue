@@ -7,14 +7,15 @@ defineProps<{
 
 const colorMode = useColorMode()
 const appConfig = useAppConfig()
-const { user, clear } = useUserSession()
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
 const colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']
 const neutrals = ['slate', 'gray', 'zinc', 'neutral', 'stone']
 
 const items = computed<DropdownMenuItem[][]>(() => ([[{
   type: 'label',
-  label: user.value?.name
+  label: user.value?.email
 }], [{
   label: 'Theme',
   icon: 'i-lucide-palette',
@@ -90,7 +91,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   label: 'Log out',
   icon: 'i-lucide-log-out',
   onSelect() {
-    clear()
+    supabase.auth.signOut()
     navigateTo('/')
   }
 }]]))
@@ -104,7 +105,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   >
     <UButton
       v-bind="{
-        label: collapsed ? undefined : (user?.name),
+        label: collapsed ? undefined : user?.email,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
       }"
       :avatar="{

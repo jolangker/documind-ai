@@ -4,7 +4,9 @@ import { LazyModalConfirm } from '#components'
 const route = useRoute()
 const toast = useToast()
 const overlay = useOverlay()
-const { loggedIn, openInPopup } = useUserSession()
+
+const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
 const open = ref(false)
 
@@ -34,7 +36,7 @@ const { data: chats, refresh: refreshChats } = await useFetch('/api/chats', {
 //   }
 // })
 
-watch(loggedIn, () => {
+watch(user, () => {
   refreshChats()
 
   open.value = false
@@ -88,7 +90,7 @@ defineShortcuts({
     <UDashboardSidebar
       id="default"
       v-model:open="open"
-      :min-size="18"
+      :min-size="24"
       collapsible
       resizable
       class="bg-elevated/50"
@@ -137,7 +139,7 @@ defineShortcuts({
       </template>
 
       <template #footer="{ collapsed }">
-        <UserMenu v-if="loggedIn" :collapsed="collapsed" />
+        <UserMenu v-if="user" :collapsed="collapsed" />
         <UButton
           v-else
           :label="collapsed ? '' : 'Login with Google'"
@@ -145,7 +147,7 @@ defineShortcuts({
           color="neutral"
           variant="ghost"
           class="w-full"
-          @click="openInPopup('/auth/google')"
+          @click="supabase.auth.signInWithOAuth({ provider: 'google' })"
         />
       </template>
     </UDashboardSidebar>
