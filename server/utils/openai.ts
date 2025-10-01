@@ -2,13 +2,14 @@ import { OpenAI } from 'openai'
 import type { Stream } from 'openai/core/streaming.mjs'
 import type { ResponseStreamEvent } from 'openai/resources/responses/responses.mjs'
 
-const apiKey = process.env.OPENAI_API_KEY
-if (!apiKey) {
+const config = useRuntimeConfig()
+
+if (!config.OPENAI_API_KEY) {
   throw createError({ status: 500, statusMessage: 'OpenAI API Key not provided' })
 }
 
 export const openai = new OpenAI({
-  apiKey
+  apiKey: config.OPENAI_API_KEY
 })
 
 interface CreateResponseReadableStreamOptions {

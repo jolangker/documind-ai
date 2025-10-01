@@ -21,6 +21,12 @@ export default defineNuxtConfig({
     }
   },
 
+  runtimeConfig: {
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_KEY: process.env.SUPABASE_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY
+  },
+
   experimental: {
     viewTransition: true
   },
@@ -58,7 +64,7 @@ export default defineNuxtConfig({
     types: '~~/shared/types/supabase.d.ts',
     redirectOptions: {
       login: '/',
-      callback: '/'
+      callback: '/',
     }
   }
 })
