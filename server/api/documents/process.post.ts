@@ -1,13 +1,15 @@
 import { useChatService } from '~~/server/services/chatService'
 import { useDocumentService } from '~~/server/services/documentService'
 import { useLLMService } from '~~/server/services/llmService'
+import { useMessageService } from '~~/server/services/messageService'
 
-const { createEmbeddings } = useLLMService()
+const { createEmbeddings, summarizeText } = useLLMService()
 
 export default defineEventHandler(async (event) => {
+  const fd = await readFormData(event)
   const { storeChat } = await useChatService(event)
   const { extractTextFromDocument, chunkDocumentText, storeAttachment, storeEmbeddings } = await useDocumentService(event)
-  const fd = await readFormData(event)
+  const { storeMessage } = await useMessageService(event)
 
   const file = fd.get('file') as File | undefined
   if (!file) {
@@ -30,7 +32,8 @@ export default defineEventHandler(async (event) => {
     storeEmbeddings(chat.id, val)
   })
 
-  // const { questions, summary } = await summarizeText(text)
+  const summary = await summarizeText(text)
+  await storeMessage({ chat_id: chat.id, role: 'assistant', content: summary })
 
   return {
     chat

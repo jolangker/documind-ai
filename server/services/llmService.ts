@@ -23,12 +23,13 @@ export function useLLMService() {
           content: `You are an AI assistant specialized in summarization.  
                     Your task:  
                     1. Read parsed PDF text.  
-                    2. Produce a short, concise, and neutral summary (max 3-5 sentences).  
-                    3. Generate up to 3 open-ended follow-up questions relevant to the text.  
+                    2. Produce a short, concise, neutral summary in natural prose (3-5 sentences).  
+                    3. Suggest up to 3 short, open-ended follow-up questions (1 line each) relevant to the text.  
 
                     Constraints:  
                     - Never hallucinate information not present in the input.  
-                    `
+                    - Do not use headings or labels like "Summary" or "Questions".  
+                    - Keep the output natural and readable, like explaining to a person.`
         },
         {
           role: 'user',
