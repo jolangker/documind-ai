@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { LazyModalConfirm } from '#components'
 import { Analytics } from '@vercel/analytics/nuxt'
+import { SpeedInsights } from '@vercel/speed-insights/nuxt'
 
 const route = useRoute()
 const toast = useToast()
@@ -171,5 +172,6 @@ defineShortcuts({
 
     <slot />
     <Analytics />
+    <SpeedInsights />
   </UDashboardGroup>
 </template>
