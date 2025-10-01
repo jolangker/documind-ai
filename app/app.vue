@@ -17,17 +17,14 @@ useHead({
   }
 })
 
-const title = 'Nuxt AI Chatbot template'
-const description = 'A full-featured, hackable Nuxt AI chatbot template made with Nuxt UI.'
+const title = 'DocuMind AI'
+const description = 'Upload documents and instantly chat with them using DocuMind AI. Get smart summaries, insights, and answers powered by advanced AI technology.'
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
-  ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/chat-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/chat-light.png',
-  twitterCard: 'summary_large_image'
+  ogDescription: description
 })
 </script>
 

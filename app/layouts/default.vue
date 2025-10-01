@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LazyModalConfirm } from '#components'
+import { Analytics } from '@vercel/analytics/nuxt'
 
 const route = useRoute()
 const toast = useToast()
@@ -97,7 +98,6 @@ defineShortcuts({
     >
       <template #header="{ collapsed }">
         <NuxtLink to="/" class="flex items-end gap-0.5">
-          <Logo class="h-8 w-auto shrink-0" />
           <span v-if="!collapsed" class="text-xl font-bold text-highlighted">DocuMind AI</span>
         </NuxtLink>
 
@@ -170,5 +170,6 @@ defineShortcuts({
     />
 
     <slot />
+    <Analytics />
   </UDashboardGroup>
 </template>
