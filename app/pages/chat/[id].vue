@@ -1,15 +1,11 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import type { DefineComponent } from 'vue'
 import { Chat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
 import type { UIMessage } from 'ai'
 import { useClipboard } from '@vueuse/core'
 import { getTextFromMessage } from '@nuxt/ui/utils/ai'
-import ProseStreamPre from '../../components/prose/PreStream.vue'
 
-const components = {
-  pre: ProseStreamPre as unknown as DefineComponent
-}
 
 const route = useRoute()
 const toast = useToast()
@@ -137,4 +133,120 @@ onMounted(() => {
       </UContainer>
     </template>
   </UDashboardPanel>
+</template> -->
+
+<script setup lang='ts'>
+import { getTextFromMessage } from '@nuxt/ui/utils/ai'
+import type { Message } from '~~/shared/types/table'
+import ProseStreamPre from '../../components/prose/PreStream.vue'
+import type { DefineComponent } from 'vue'
+
+const components = {
+  pre: ProseStreamPre as unknown as DefineComponent
+}
+
+const route = useRoute()
+const supabase = useSupabaseClient()
+
+const { copy, copied } = useClipboard()
+
+const { data: chat, error } = await useFetch<Chat>(`/api/chat/${route.params.id}`)
+
+if (!chat.value || error.value) {
+  throw createError({ status: 404, statusMessage: 'Chat not found' })
+}
+
+const { data } = supabase.storage.from('attachments').getPublicUrl(chat.value.attachment_path)
+
+const { data: messages } = await useFetch<Message[]>(`/api/chat/${chat.value.id}/messages`)
+
+const { uiMessages, addMessage, updateMessageContent } = useMessages(messages)
+
+const input = ref('')
+
+const handleSubmit = async () => {
+  const { content } = addMessage('user', input.value)
+  input.value = ''
+
+  const res = await fetch(`/api/chat/${chat.value?.id}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({
+      content,
+      role: 'user'
+    })
+  })
+
+  const { id: assistantId } = addMessage('assistant', '')
+
+  const reader = res.body!.getReader()
+  const decoder = new TextDecoder()
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    const chunk = decoder.decode(value, { stream: true })
+    updateMessageContent(assistantId, chunk)
+  }
+}
+</script>
+
+<template>
+  <div class="relative flex-1 flex">
+    <UDashboardPanel :id="`chat-pdf-viewer-${chat?.id}`" :default-size="30" :ui="{ root: 'hidden xl:flex' }">
+      <template #body>
+        <div class="flex-1 flex flex-col">
+          <PdfViewer :src="data.publicUrl" :name="chat?.title" />
+        </div>
+      </template>
+    </UDashboardPanel>
+    <UDashboardPanel :id="`chat-interface-${chat?.id}`" :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header>
+        <DashboardNavbar />
+      </template>
+      <template #body>
+        <UContainer class="flex-1 flex flex-col gap-4 sm:gap-6">
+          <UChatMessages
+            :messages="uiMessages"
+            :status="'ready'"
+            class="lg:pt-(--ui-header-height) pb-4 sm:pb-6"
+            :assistant="{ actions: [{ label: 'Copy', icon: copied ? 'i-lucide-copy-check' : 'i-lucide-copy', onClick: (e, message) => copy(getTextFromMessage(message)) }] }"
+            :spacing-offset="160"
+          >
+            <template #content="{ message }">
+              <div class="space-y-4">
+                <template v-for="(part, index) in message.parts" :key="`${part.type}-${index}-${message.id}`">
+                  <UButton
+                    v-if="part.type === 'reasoning' && part.state !== 'done'"
+                    label="Thinking..."
+                    variant="link"
+                    color="neutral"
+                    class="p-0"
+                    loading
+                  />
+                </template>
+                <MDCCached
+                  :value="getTextFromMessage(message)"
+                  :cache-key="message.id"
+                  unwrap="p"
+                  :parser-options="{ highlight: false }"
+                  :components="components"
+                />
+              </div>
+            </template>
+          </UChatMessages>
+
+          <UChatPrompt
+            v-model="input"
+            variant="subtle"
+            class="sticky bottom-0 [view-transition-name:chat-prompt] rounded-b-none z-10"
+            @submit="handleSubmit"
+          >
+            <UChatPromptSubmit
+              color="neutral"
+            />
+          </UChatPrompt>
+        </UContainer>
+      </template>
+    </UDashboardPanel>
+  </div>
 </template>

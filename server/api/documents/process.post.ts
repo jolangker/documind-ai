@@ -2,7 +2,7 @@ import { useChatService } from '~~/server/services/chatService'
 import { useDocumentService } from '~~/server/services/documentService'
 import { useLLMService } from '~~/server/services/llmService'
 
-const { createEmbeddings, summarizeText } = useLLMService()
+const { createEmbeddings } = useLLMService()
 
 export default defineEventHandler(async (event) => {
   const { storeChat } = await useChatService(event)
@@ -14,26 +14,25 @@ export default defineEventHandler(async (event) => {
     throw createError({ status: 422, statusMessage: 'file is required' })
   }
 
-  const { text, totalPages } = await extractTextFromDocument(file)
+  const { text } = await extractTextFromDocument(file)
   const chunks = await chunkDocumentText(text, file.name)
 
-  const embeddings = await createEmbeddings(chunks)
-  const { fullPath } = await storeAttachment(file)
+  const { path } = await storeAttachment(file)
 
   const chatPayload: ChatPayload = {
-    attachment_path: fullPath,
+    attachment_path: path,
     title: file.name
   }
 
   const chat = await storeChat(chatPayload)
-  await storeEmbeddings(chat.id, embeddings)
 
-  const { questions, summary } = await summarizeText(text)
+  createEmbeddings(chunks).then((val) => {
+    storeEmbeddings(chat.id, val)
+  })
+
+  // const { questions, summary } = await summarizeText(text)
 
   return {
-    totalPages,
-    questions,
-    summary,
     chat
   }
 })

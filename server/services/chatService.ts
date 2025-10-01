@@ -28,8 +28,22 @@ export async function useChatService(event: H3Event) {
     return data
   }
 
+  const getChat = async (chatId: string) => {
+    const { data, error } = await supabase.from('chats')
+      .select('*')
+      .eq('id', chatId)
+      .single()
+
+    if (!data || error) {
+      throw createError(error)
+    }
+
+    return data
+  }
+
   return {
     storeChat,
-    getChats
+    getChats,
+    getChat
   }
 }
