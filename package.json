@@ -9,13 +9,9 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "typecheck": "nuxt typecheck",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
     "sb:typegen": "supabase gen types typescript --project-id aamadzhhmmpubdvowqcm > shared/types/supabase.d.ts"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^1.0.30",
-    "@ai-sdk/vue": "^2.0.56",
     "@iconify-json/logos": "^1.2.9",
     "@iconify-json/lucide": "^1.2.68",
     "@iconify-json/simple-icons": "^1.2.53",
@@ -28,7 +24,6 @@
     "@vueuse/nuxt": "^13.9.0",
     "ai": "^5.0.56",
     "date-fns": "^4.1.0",
-    "drizzle-orm": "^0.44.5",
     "langchain": "^0.3.35",
     "nuxt": "^4.1.2",
     "openai": "^5.23.1",
@@ -47,6 +42,5 @@
   },
   "resolutions": {
     "unimport": "4.1.1"
-  },
-  "packageManager": "pnpm@10.17.1"
+  }
 }
