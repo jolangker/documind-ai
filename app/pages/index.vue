@@ -2,9 +2,12 @@
 import type { Chat } from '~~/shared/types/table'
 
 const user = useSupabaseUser()
+const loading = ref(false)
 
 const handleUpload = async (file: File | null | undefined) => {
   if (!file) return
+
+  loading.value = true
   const fd = new FormData()
   fd.append('file', file)
 
@@ -16,13 +19,9 @@ const handleUpload = async (file: File | null | undefined) => {
     navigateTo(`/chat/${res.chat.id}`)
   } catch (error) {
     console.error(error)
+  } finally {
+    loading.value = false
   }
-  // const res = await $fetch('/api/documents/process', {
-  // method: 'POST'
-  // })
-
-  // refreshNuxtData('chats')
-  // navigateTo(`/chat/${res?.chat?.id}`)
 }
 </script>
 
@@ -34,23 +33,29 @@ const handleUpload = async (file: File | null | undefined) => {
 
     <template #body>
       <UContainer class="flex-1 flex flex-col justify-center gap-4 sm:gap-6 py-8">
-        <div class="text-center">
-          <h1 class="text-3xl sm:text-4xl text-highlighted font-bold">
-            Unlock Insights from Any PDF
-          </h1>
-          <p class="text-sm sm:text-base text-highlighted/60 mx-auto">
-            Upload your document and start chatting with AI to get answers, summaries, and more.
-          </p>
+        <template v-if="!loading">
+          <div class="text-center">
+            <h1 class="text-3xl sm:text-4xl text-highlighted font-bold">
+              Unlock Insights from Any PDF
+            </h1>
+            <p class="text-sm sm:text-base text-highlighted/60 mx-auto">
+              Upload your document and start chatting with AI to get answers, summaries, and more.
+            </p>
+          </div>
+          <UFileUpload
+            interactive
+            label="Drop your pdf file here"
+            description="only accept PDF file"
+            class="min-h-48"
+            :disabled="!user"
+            accept="application/pdf"
+            @update:model-value="handleUpload"
+          />
+        </template>
+        <div v-else class="flex-1 grid place-items-center text-highlighted/70">
+          <UIcon name="line-md:uploading-loop" :size="64" />
         </div>
-        <UFileUpload
-          interactive
-          label="Drop your pdf file here"
-          description="only accept PDF file"
-          class="min-h-48"
-          :disabled="!user"
-          accept="application/pdf"
-          @update:model-value="handleUpload"
-        />
+
         <!-- <UChatPrompt
           v-model="input"
           :status="loading ? 'streaming' : 'ready'"
