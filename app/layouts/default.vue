@@ -63,7 +63,7 @@ async function deleteChat(id: string) {
     return
   }
 
-  // await $fetch(`/api/chats/${id}`, { method: 'DELETE' })
+  await $fetch(`/api/chat/${id}`, { method: 'DELETE' })
 
   toast.add({
     title: 'Chat deleted',
@@ -136,6 +136,11 @@ defineShortcuts({
             </div>
           </template>
         </UNavigationMenu>
+
+        <div v-if="!collapsed && !items.length" class="my-auto italic text-sm text-center">
+          <div>Your chat history will appear here</div>
+          <div>You can start chat by uploading PDF file</div>
+        </div>
       </template>
 
       <template #footer="{ collapsed }">

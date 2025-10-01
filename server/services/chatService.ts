@@ -41,9 +41,17 @@ export async function useChatService(event: H3Event) {
     return data
   }
 
+  const deleteChat = async (chatId: string) => {
+    const { error } = await supabase.from('chats').delete().eq('id', chatId)
+    if (error) {
+      throw createError(error)
+    }
+  }
+
   return {
     storeChat,
     getChats,
-    getChat
+    getChat,
+    deleteChat
   }
 }

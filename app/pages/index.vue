@@ -43,6 +43,7 @@ const handleUpload = async (file: File | null | undefined) => {
           description="only accept PDF file"
           class="min-h-48"
           :disabled="!user"
+          accept="application/pdf"
           @update:model-value="handleUpload"
         />
         <!-- <UChatPrompt

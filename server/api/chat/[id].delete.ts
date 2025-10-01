@@ -1,14 +1,13 @@
 import { useChatService } from '~~/server/services/chatService'
 
 export default defineEventHandler(async (event) => {
-  const { getChat } = await useChatService(event)
+  const { deleteChat } = await useChatService(event)
   const { id: chatId } = event.context.params as { id: string }
 
   if (!chatId) {
     throw createError({ status: 404, statusMessage: 'Chat not found' })
   }
 
-  const chat = await getChat(chatId)
-
-  return chat
+  await deleteChat(chatId)
+  return {}
 })
