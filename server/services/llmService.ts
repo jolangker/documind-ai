@@ -40,8 +40,37 @@ export function useLLMService() {
     return res.output_text
   }
 
+  const questionAnswer = async (query: string, context: string[]) => {
+    const stream = await openai.responses.create({
+      model: 'gpt-5-nano',
+      input: [
+        {
+          role: 'system',
+          content: `You are an AI specialized in question answering.
+
+                    Instructions:
+
+                    * Always read the input in the exact format:
+                      Context: <context> Question: <question>
+                    * Use the context to answer the question as accurately and concisely as possible.
+                    * Do **not** include information that is not present in the context.
+                    * Respond in clear, complete sentences.
+                    * If the answer cannot be found in the context, respond: The answer is not available in the provided context.`
+        },
+        {
+          role: 'user',
+          content: `Context: ${context.join('\n')}
+                    Question: ${query}`
+        }
+      ],
+      stream: true
+    })
+    return stream
+  }
+
   return {
     createEmbeddings,
-    summarizeText
+    summarizeText,
+    questionAnswer
   }
 }

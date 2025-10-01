@@ -207,16 +207,29 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       match_documents: {
-        Args: { filter?: Json; match_count?: number; query_embedding: string }
+        Args:
+          | {
+              match_count: number
+              match_threshold: number
+              p_chat_id?: string
+              p_profile_id?: string
+              query_embedding: string
+            }
+          | {
+              match_count: number
+              match_threshold: number
+              query_embedding: string
+            }
         Returns: {
-          content: string
-          embedding: Json
+          chat_id: string
+          content: string | null
+          embedding: string | null
           id: number
-          metadata: Json
-          similarity: number
+          metadata: Json | null
+          profile_id: string | null
         }[]
       }
       sparsevec_out: {

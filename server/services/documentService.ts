@@ -50,10 +50,30 @@ export async function useDocumentService(event: H3Event) {
     return data
   }
 
+  const similaritySearch = async (query: string, chatId: string) => {
+    const res = await openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: query
+    })
+
+    const { data, error } = await supabase.rpc('match_documents', {
+      query_embedding: res.data[0].embedding,
+      match_threshold: 0.8,
+      match_count: 3,
+      p_chat_id: chatId,
+      p_profile_id: user?.sub
+    })
+    if (!data || error) {
+      throw createError(error)
+    }
+    return data
+  }
+
   return {
     extractTextFromDocument,
     chunkDocumentText,
     storeAttachment,
-    storeEmbeddings
+    storeEmbeddings,
+    similaritySearch
   }
 }
