@@ -26,12 +26,12 @@ export function useMessages(messages: Ref<Message[]>) {
 
     messages.value.push(newMessage)
     messages.value = [...messages.value]
-
     return newMessage
   }
 
   const updateMessageContent = (messageId: string, content: string) => {
     const messageIdx = messages.value.findIndex(({ id }) => id === messageId)
+
     if (messages.value[messageIdx]) {
       messages.value[messageIdx].content += content
       messages.value = [...messages.value]

@@ -6,7 +6,6 @@ import type { UIMessage } from 'ai'
 import { useClipboard } from '@vueuse/core'
 import { getTextFromMessage } from '@nuxt/ui/utils/ai'
 
-
 const route = useRoute()
 const toast = useToast()
 const clipboard = useClipboard()
@@ -140,6 +139,7 @@ import { getTextFromMessage } from '@nuxt/ui/utils/ai'
 import type { Message } from '~~/shared/types/table'
 import ProseStreamPre from '../../components/prose/PreStream.vue'
 import type { DefineComponent } from 'vue'
+import type { ChatStatus } from 'ai'
 
 const components = {
   pre: ProseStreamPre as unknown as DefineComponent
@@ -161,32 +161,55 @@ const { data } = supabase.storage.from('attachments').getPublicUrl(chat.value.at
 const { data: messages } = await useFetch<Message[]>(`/api/chat/${chat.value.id}/messages`)
 
 const { uiMessages, addMessage, updateMessageContent } = useMessages(messages)
+const status = ref<ChatStatus>('ready')
 
 const input = ref('')
 
 const handleSubmit = async () => {
-  const { content } = addMessage('user', input.value)
-  input.value = ''
+  if (status.value !== 'ready') return
 
-  const res = await fetch(`/api/chat/${chat.value?.id}/messages`, {
-    method: 'POST',
-    body: JSON.stringify({
-      content,
+  let assistantId: string | null = null
+
+  await useFetchStream(`/api/chat/${chat.value?.id}/messages`, {
+    body: {
+      content: input.value,
       role: 'user'
-    })
+    },
+    onStart: () => {
+      status.value = 'submitted'
+      addMessage('user', input.value)
+      input.value = ''
+    },
+    onStream: (chunk: string) => {
+      status.value = 'streaming'
+      if (!assistantId) {
+        const { id } = addMessage('assistant', '')
+        assistantId = id
+      }
+      updateMessageContent(assistantId, chunk)
+    },
+    onFinish: () => { status.value = 'ready' }
   })
 
-  const { id: assistantId } = addMessage('assistant', '')
+  // const res = await fetch(`/api/chat/${chat.value?.id}/messages`, {
+  //   method: 'POST',
+  //   body: JSON.stringify({
+  //     content,
+  //     role: 'user'
+  //   })
+  // })
 
-  const reader = res.body!.getReader()
-  const decoder = new TextDecoder()
+  // const { id: assistantId } = addMessage('assistant', '')
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    const chunk = decoder.decode(value, { stream: true })
-    updateMessageContent(assistantId, chunk)
-  }
+  // const reader = res.body!.getReader()
+  // const decoder = new TextDecoder()
+
+  // while (true) {
+  //   const { done, value } = await reader.read()
+  //   if (done) break
+  //   const chunk = decoder.decode(value, { stream: true })
+  //   updateMessageContent(assistantId, chunk)
+  // }
 }
 </script>
 
@@ -207,10 +230,10 @@ const handleSubmit = async () => {
         <UContainer class="flex-1 flex flex-col gap-4 sm:gap-6">
           <UChatMessages
             :messages="uiMessages"
-            :status="'ready'"
             class="lg:pt-(--ui-header-height) pb-4 sm:pb-6"
             :assistant="{ actions: [{ label: 'Copy', icon: copied ? 'i-lucide-copy-check' : 'i-lucide-copy', onClick: (e, message) => copy(getTextFromMessage(message)) }] }"
             :spacing-offset="160"
+            :status="status"
           >
             <template #content="{ message }">
               <div class="space-y-4">
@@ -243,6 +266,7 @@ const handleSubmit = async () => {
           >
             <UChatPromptSubmit
               color="neutral"
+              :status="status"
             />
           </UChatPrompt>
         </UContainer>

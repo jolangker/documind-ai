@@ -9,3 +9,7 @@ export type DocumentPayload = Database['public']['Tables']['documents']['Insert'
 export type Message = Database['public']['Tables']['messages']['Row'] & {
   role: 'system' | 'user' | 'assistant'
 }
+
+export type MessagePayload = Database['public']['Tables']['messages']['Insert'] & {
+  role: 'system' | 'user' | 'assistant'
+}
