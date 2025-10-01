@@ -90,7 +90,7 @@ defineShortcuts({
     <UDashboardSidebar
       id="default"
       v-model:open="open"
-      :min-size="24"
+      :default-size="24"
       collapsible
       resizable
       class="bg-elevated/50"

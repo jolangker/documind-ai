@@ -34,9 +34,14 @@ const handleUpload = async (file: File | null | undefined) => {
 
     <template #body>
       <UContainer class="flex-1 flex flex-col justify-center gap-4 sm:gap-6 py-8">
-        <h1 class="text-3xl sm:text-4xl text-highlighted font-bold text-center">
-          Chat with any PDF
-        </h1>
+        <div class="text-center">
+          <h1 class="text-3xl sm:text-4xl text-highlighted font-bold">
+            Unlock Insights from Any PDF
+          </h1>
+          <p class="text-sm sm:text-base text-highlighted/60 mx-auto">
+            Upload your document and start chatting with AI to get answers, summaries, and more.
+          </p>
+        </div>
         <UFileUpload
           interactive
           label="Drop your pdf file here"
