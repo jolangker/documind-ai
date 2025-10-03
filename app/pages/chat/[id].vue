@@ -135,7 +135,10 @@ const handleSubmit = async () => {
           >
             <template #header>
               <UTooltip
-                text="The AI will only use this document to answer, no outside knowledge."
+                :text="isStrict
+                  ? 'The AI will only use this document to answer, no outside knowledge.'
+                  : 'The AI can use your document as context but may also add helpful info from outside sources.'
+                "
                 :delay-duration="0"
                 :content="{ side: 'top' }"
               >
@@ -146,6 +149,12 @@ const handleSubmit = async () => {
                   variant="soft"
                   @click="isStrict = !isStrict"
                 />
+                <span class="text-sm italic md:hidden">
+                  {{ isStrict
+                    ? 'Only answers from this document.'
+                    : 'Uses document + outside knowledge.'
+                  }}
+                </span>
               </UTooltip>
             </template>
             <UChatPromptSubmit
