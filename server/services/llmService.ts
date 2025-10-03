@@ -1,12 +1,8 @@
 import type { DocumentChunk, DocumentEmbedding } from '~~/shared/types/document'
-import { openai } from '../utils/openai'
 
 export function useLLMService() {
   const createEmbeddings = async (chunks: DocumentChunk[]): Promise<DocumentEmbedding[]> => {
-    const res = await openai.embeddings.create({
-      model: 'text-embedding-ada-002',
-      input: chunks.map(({ content }) => content)
-    })
+    const res = await createEmbeddingsWrapper(chunks.map(({ content }) => content))
     return res.data.map(({ embedding, index }) => ({
       content: chunks[index].content,
       metadata: chunks[index].metadata,

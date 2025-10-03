@@ -50,3 +50,10 @@ export const createResponseReadableStream = (
     }
   })
 }
+
+export const createEmbeddingsWrapper = async (input: string | string[]) => {
+  return await openai.embeddings.create({
+    model: 'text-embedding-ada-002',
+    input
+  })
+}
