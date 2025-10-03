@@ -1,7 +1,9 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import type { Chat } from '~~/shared/types/table'
 
 const toast = useToast()
+const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const loading = ref(false)
 
@@ -18,7 +20,7 @@ const handleUpload = async (file: File | null | undefined) => {
       body: fd
     })
     navigateTo(`/chat/${res.chat.id}`)
-  } catch (error) {
+  } catch (error: any) {
     toast.add({
       title: 'Error',
       description: error?.statusMessage,
@@ -48,15 +50,26 @@ const handleUpload = async (file: File | null | undefined) => {
               Upload your document and start chatting with AI to get answers and summaries.
             </p>
           </div>
-          <UFileUpload
-            interactive
-            label="Drag & drop your PDF here"
-            description="Maximum file size: 5 MB"
-            class="min-h-48"
-            :disabled="!user"
-            accept="application/pdf"
-            @update:model-value="handleUpload"
-          />
+          <div class="relative">
+            <UFileUpload
+              interactive
+              label="Drag & drop your PDF here"
+              description="Maximum file size: 5 MB"
+              class="min-h-48"
+              :disabled="!user"
+              accept="application/pdf"
+              @update:model-value="handleUpload"
+            />
+            <div v-if="!user" class="absolute inset-0 bg-elevated/10 rounded-lg backdrop-blur-sm grid place-items-center">
+              <UButton
+                label="Login with Google"
+                icon="i-simple-icons-google"
+                color="neutral"
+                variant="outline"
+                @click="supabase.auth.signInWithOAuth({ provider: 'google' })"
+              />
+            </div>
+          </div>
         </template>
         <div v-else class="flex-1 grid place-items-center text-highlighted/70">
           <UIcon name="line-md:uploading-loop" :size="64" />
