@@ -1,5 +1,27 @@
 import type { DocumentChunk, DocumentEmbedding } from '~~/shared/types/document'
 
+const prompts = {
+  answer: {
+    strict: `You are an AI specialized in question answering.
+            Instructions:
+            * Always read the input in the exact format:
+              Context: <context> Question: <question>
+            * Use the context to answer the question as accurately and concisely as possible.
+            * Do **not** include information that is not present in the context.
+            * Respond in clear, complete sentences.
+            * If the answer cannot be found in the context, respond: The answer is not available in the provided context.`,
+    noStrict: `You are an AI specialized in question answering.
+              Instructions:
+              * Always read the input in the exact format: 
+                Context: <context> Question: <question> 
+              * First, try to answer using only the provided context. 
+              * If the answer is found in the context, respond in clear, complete, and concise sentences. 
+              * If the answer is not in the context, you may reference outside knowledge, but you must explicitly state that it comes from outside the provided context (e.g., "Based on external knowledge..."). 
+              * Do not mix external knowledge with the context unless clearly marked. 
+              * If no answer can be found in either the context or external knowledge, respond: The answer is not available.`
+  }
+}
+
 export function useLLMService() {
   const createEmbeddings = async (chunks: DocumentChunk[]): Promise<DocumentEmbedding[]> => {
     const res = await createEmbeddingsWrapper(chunks.map(({ content }) => content))
@@ -36,22 +58,13 @@ export function useLLMService() {
     return res.output_text
   }
 
-  const questionAnswer = async (query: string, context: string[]) => {
+  const questionAnswer = async (query: string, context: string[], strict: boolean) => {
     const stream = await openai.responses.create({
       model: 'gpt-5-nano',
       input: [
         {
           role: 'system',
-          content: `You are an AI specialized in question answering.
-
-                    Instructions:
-
-                    * Always read the input in the exact format:
-                      Context: <context> Question: <question>
-                    * Use the context to answer the question as accurately and concisely as possible.
-                    * Do **not** include information that is not present in the context.
-                    * Respond in clear, complete sentences.
-                    * If the answer cannot be found in the context, respond: The answer is not available in the provided context.`
+          content: strict ? prompts.answer.strict : prompts.answer.noStrict
         },
         {
           role: 'user',

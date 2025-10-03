@@ -10,18 +10,18 @@ export default defineEventHandler(async (event) => {
   const { similaritySearch } = await useDocumentService(event)
 
   const { id: chatId } = event.context.params as { id: string }
-  const body: { content: string, role: 'assistant' | 'user' } = JSON.parse(await readBody(event))
+  const body: { content: string, role: 'assistant' | 'user', strict: boolean } = JSON.parse(await readBody(event))
 
   if (!chatId) {
     throw createError({ status: 404, statusMessage: 'Chat not found' })
   }
 
-  storeMessage({ chat_id: chatId, ...body })
+  storeMessage({ chat_id: chatId, role: body.role, content: body.content })
 
   const data = await similaritySearch(body.content, chatId)
   const context = data.map(({ content }) => content || '')
 
-  const stream = await questionAnswer(body.content, context)
+  const stream = await questionAnswer(body.content, context, body.strict)
 
   return createResponseReadableStream(stream, {
     onComplete: (content) => {

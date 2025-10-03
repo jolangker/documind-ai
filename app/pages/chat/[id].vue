@@ -49,6 +49,7 @@ watchEffect(() => {
 const { uiMessages, addMessage, updateMessageContent } = useMessages(messages)
 
 const input = ref('')
+const isStrict = ref(true)
 
 const handleSubmit = async () => {
   if (status.value !== 'ready') return
@@ -58,7 +59,8 @@ const handleSubmit = async () => {
   await useFetchStream(`/api/chat/${chat.value?.id}/messages`, {
     body: {
       content: input.value,
-      role: 'user'
+      role: 'user',
+      strict: isStrict.value
     },
     onStart: () => {
       status.value = 'submitted'
@@ -131,6 +133,21 @@ const handleSubmit = async () => {
             class="sticky bottom-0 [view-transition-name:chat-prompt] rounded-b-none z-10"
             @submit="handleSubmit"
           >
+            <template #header>
+              <UTooltip
+                text="The AI will only use this document to answer, no outside knowledge."
+                :delay-duration="0"
+                :content="{ side: 'top' }"
+              >
+                <UButton
+                  label="Strict Mode"
+                  size="sm"
+                  :color="isStrict ? 'primary' : 'neutral'"
+                  variant="soft"
+                  @click="isStrict = !isStrict"
+                />
+              </UTooltip>
+            </template>
             <UChatPromptSubmit
               color="neutral"
               :status="status"
