@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Chat } from '~~/shared/types/table'
 
+const toast = useToast()
 const user = useSupabaseUser()
 const loading = ref(false)
 
@@ -18,6 +19,11 @@ const handleUpload = async (file: File | null | undefined) => {
     })
     navigateTo(`/chat/${res.chat.id}`)
   } catch (error) {
+    toast.add({
+      title: 'Error',
+      description: error?.statusMessage,
+      color: 'error'
+    })
     console.error(error)
   } finally {
     loading.value = false
@@ -44,8 +50,8 @@ const handleUpload = async (file: File | null | undefined) => {
           </div>
           <UFileUpload
             interactive
-            label="Drop your pdf file here"
-            description="only accept PDF file"
+            label="Drag & drop your PDF here"
+            description="Maximum file size: 5 MB"
             class="min-h-48"
             :disabled="!user"
             accept="application/pdf"

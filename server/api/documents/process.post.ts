@@ -17,7 +17,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ status: 422, statusMessage: 'file is required' })
   }
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024
+  if (file.size > MAX_FILE_SIZE) {
+    throw createError({ status: 422, statusMessage: 'File size exceeds 5MB limit' })
+  }
+
   const { text } = await extractTextFromDocument(file)
+  if (!text || text.trim() === '') {
+    throw createError({ status: 422, statusMessage: 'This PDF cant be processed. Make sure it contains readable text' })
+  }
+
   const chunks = await chunkDocumentText(text, file.name)
 
   const { path } = await storeAttachment(file)
