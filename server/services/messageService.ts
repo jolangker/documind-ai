@@ -30,8 +30,19 @@ export async function useMessageService(event: H3Event) {
     return data
   }
 
+  const updateMessage = async (messageId: string, payload: Partial<MessagePayload>) => {
+    const { error } = await supabase.from('messages')
+      .update(payload)
+      .eq('id', messageId)
+
+    if (error) {
+      throw createError(error)
+    }
+  }
+
   return {
     storeMessage,
-    getMessages
+    getMessages,
+    updateMessage
   }
 }

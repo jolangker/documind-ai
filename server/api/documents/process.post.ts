@@ -2,6 +2,7 @@ import { useChatService } from '~~/server/services/chatService'
 import { useDocumentService } from '~~/server/services/documentService'
 import { useLLMService } from '~~/server/services/llmService'
 import { useMessageService } from '~~/server/services/messageService'
+import { publishToChat } from '~~/server/utils/notifier'
 
 const { createEmbeddings, summarizeText } = useLLMService()
 
@@ -32,8 +33,13 @@ export default defineEventHandler(async (event) => {
     storeEmbeddings(chat.id, val)
   })
 
-  const summary = await summarizeText(text)
-  await storeMessage({ chat_id: chat.id, role: 'assistant', content: summary })
+  summarizeText(text).then((summary) => {
+    storeMessage({ chat_id: chat.id, role: 'assistant', content: summary }).then((message) => {
+      if (message) {
+        publishToChat(chat.id, 'summary-ready', message)
+      }
+    })
+  })
 
   return {
     chat

@@ -1,6 +1,7 @@
 import type { UIMessage } from 'ai'
 import { formatISO } from 'date-fns'
 import { v4 as uuidv4 } from 'uuid'
+import type { Message } from '~~/shared/types/table'
 
 export function useMessages(messages: Ref<Message[]>) {
   const uiMessages = computed<UIMessage[]>(() => {
@@ -14,14 +15,15 @@ export function useMessages(messages: Ref<Message[]>) {
     }))
   })
 
-  const addMessage = (role: 'user' | 'assistant', content: string) => {
-    const newMessage = {
+  const addMessage = (role: Message['role'], content: string) => {
+    const newMessage: Message = {
       id: uuidv4(),
       chat_id: uuidv4(),
       content,
       created_at: formatISO(new Date()),
       profile_id: uuidv4(),
-      role
+      role,
+      processing: false
     }
 
     messages.value.push(newMessage)

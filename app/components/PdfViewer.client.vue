@@ -12,9 +12,11 @@ const { pdf, pages } = usePDF(props.src)
 
 <template>
   <div class="flex-1 flex flex-col">
-    <div class="bg-elevated p-2 text-sm rounded-t-lg font-medium flex justify-between items-center gap-2">
+    <div class="bg-elevated p-4 px-4 text-sm rounded-t-lg font-medium flex justify-between items-center gap-2">
       <div>{{ name }}</div>
-      <div>Total Page: {{ pages }}</div>
+      <div class="shrink-0">
+        Total Page: {{ pages }}
+      </div>
     </div>
     <div class="flex-grow basis-0 overflow-y-auto rounded-b-lg border-2 border-t-0 border-default">
       <div class="flex flex-col gap-2">

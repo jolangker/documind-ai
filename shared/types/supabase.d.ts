@@ -94,24 +94,27 @@ export type Database = {
           content: string | null
           created_at: string
           id: string
+          processing: boolean | null
           profile_id: string | null
-          role: string
+          role: Database["public"]["Enums"]["message-role"]
         }
         Insert: {
           chat_id: string
           content?: string | null
           created_at?: string
           id?: string
+          processing?: boolean | null
           profile_id?: string | null
-          role: string
+          role: Database["public"]["Enums"]["message-role"]
         }
         Update: {
           chat_id?: string
           content?: string | null
           created_at?: string
           id?: string
+          processing?: boolean | null
           profile_id?: string | null
-          role?: string
+          role?: Database["public"]["Enums"]["message-role"]
         }
         Relationships: [
           {
@@ -270,7 +273,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      "message-role": "assistant" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -397,6 +400,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      "message-role": ["assistant", "user"],
+    },
   },
 } as const

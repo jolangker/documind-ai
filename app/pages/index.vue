@@ -39,7 +39,7 @@ const handleUpload = async (file: File | null | undefined) => {
               Unlock Insights from Any PDF
             </h1>
             <p class="text-sm sm:text-base text-highlighted/60 mx-auto">
-              Upload your document and start chatting with AI to get answers, summaries, and more.
+              Upload your document and start chatting with AI to get answers and summaries.
             </p>
           </div>
           <UFileUpload

@@ -13,6 +13,7 @@ const route = useRoute()
 const supabase = useSupabaseClient()
 
 const { copy, copied } = useClipboard()
+const status = ref<ChatStatus>('ready')
 
 const { data: chat, error } = await useFetch<Chat>(`/api/chat/${route.params.id}`)
 
@@ -20,12 +21,32 @@ if (!chat.value || error.value) {
   throw createError({ status: 404, statusMessage: 'Chat not found' })
 }
 
-const { data } = supabase.storage.from('attachments').getPublicUrl(chat.value.attachment_path)
+const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(chat.value.attachment_path)
 
-const { data: messages } = await useFetch<Message[]>(`/api/chat/${chat.value.id}/messages`)
+const { data: messages, refresh: refreshMessages } = await useFetch<Message[]>(`/api/chat/${chat.value.id}/messages`)
+
+const { event, close, open } = useEventSource(
+  `/api/chat/${route.params.id}/event`,
+  ['heartbeat', 'summary-ready'],
+  {
+    immediate: false
+  }
+)
+
+if (!messages.value?.length) {
+  open()
+  status.value = 'submitted'
+}
+
+watchEffect(() => {
+  if (event.value === 'summary-ready') {
+    status.value = 'ready'
+    refreshMessages()
+    close()
+  }
+})
 
 const { uiMessages, addMessage, updateMessageContent } = useMessages(messages)
-const status = ref<ChatStatus>('ready')
 
 const input = ref('')
 
@@ -62,7 +83,7 @@ const handleSubmit = async () => {
     <UDashboardPanel :id="`chat-pdf-viewer-${chat?.id}`" :default-size="30" :ui="{ root: 'hidden xl:flex' }">
       <template #body>
         <div class="flex-1 flex flex-col">
-          <PdfViewer :src="data.publicUrl" :name="chat?.title" />
+          <PdfViewer :src="publicUrl" :name="chat?.title" />
         </div>
       </template>
     </UDashboardPanel>
@@ -75,22 +96,24 @@ const handleSubmit = async () => {
           <UChatMessages
             :messages="uiMessages"
             class="lg:pt-(--ui-header-height) pb-4 sm:pb-6"
-            :assistant="{ actions: [{ label: 'Copy', icon: copied ? 'i-lucide-copy-check' : 'i-lucide-copy', onClick: (e, message) => copy(getTextFromMessage(message)) }] }"
+            :assistant="{
+              actions: [{ label: 'Copy', icon: copied ? 'i-lucide-copy-check' : 'i-lucide-copy', onClick: (e, message) => copy(getTextFromMessage(message)) }],
+              icon: 'i-lucide-bot'
+            }"
             :spacing-offset="160"
             :status="status"
           >
+            <template v-if="!messages?.length && status === 'submitted'" #indicator>
+              <UButton
+                label="Generating summary..."
+                variant="link"
+                color="neutral"
+                class="p-0"
+                loading
+              />
+            </template>
             <template #content="{ message }">
               <div class="space-y-4">
-                <template v-for="(part, index) in message.parts" :key="`${part.type}-${index}-${message.id}`">
-                  <UButton
-                    v-if="part.type === 'reasoning' && part.state !== 'done'"
-                    label="Thinking..."
-                    variant="link"
-                    color="neutral"
-                    class="p-0"
-                    loading
-                  />
-                </template>
                 <MDCCached
                   :value="getTextFromMessage(message)"
                   :cache-key="message.id"
