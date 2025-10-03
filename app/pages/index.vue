@@ -22,8 +22,7 @@ const handleUpload = async (file: File | null | undefined) => {
     navigateTo(`/chat/${res.chat.id}`)
   } catch (error: any) {
     toast.add({
-      title: 'Error',
-      description: error?.statusMessage,
+      title: error?.statusMessage,
       color: 'error'
     })
     console.error(error)
